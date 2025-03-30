@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+      {
+          "name": "Attach to Odoo (Docker)",
+          "type": "debugpy",
+          "request": "attach",
+          "connect": {
+              "host": "localhost",
+              "port": 5678
+          },
+          "pathMappings": [
+              {
+                  "localRoot": "${workspaceFolder}/addons",
+                  "remoteRoot": "/mnt/extra-addons"
+              },
+              // {
+              //     "localRoot": "${workspaceFolder}/enterprise",
+              //     "remoteRoot": "/mnt/enterprise"
+              // },
+          ],
+          "preLaunchTask": "Docker Compose Debug",
+          "justMyCode": false,
+          "logToFile": true,
+          "redirectOutput": true,
+      }
+  ],
+}
