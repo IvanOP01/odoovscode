@@ -1,0 +1,46 @@
+services:
+  odoo:
+    # image: odoo:${ODOO_VERSION}
+    container_name: odoo${ODOO_VERSION}
+    build:
+      context: .
+      dockerfile: Dockerfile.odoo
+      args:
+        ODOO_VERSION: ${ODOO_VERSION}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8069:8069"
+      - "8072:8072"
+      - "5678:5678"
+    volumes:
+      - ./odoo.conf:/etc/odoo/odoo.conf:rw
+      - ./addons:/mnt/extra-addons:rw
+      - ./scripts/entrypoint.sh:/entrypoint.sh
+    environment:
+      - ODOO_RC=/etc/odoo/odoo.conf
+    env_file:
+      - .env
+    restart: unless-stopped
+    # command: python3 -m debugpy --listen 0.0.0.0:5678 --wait-for-client /usr/bin/odoo -c /etc/odoo/odoo.conf
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8069/web/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  db:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

@@ -1,0 +1,24 @@
+ARG ODOO_VERSION
+FROM odoo:${ODOO_VERSION}
+
+# Ejecutar como root solo para instalar dependencias
+USER root
+
+# Copiar archivos de requisitos
+COPY config/apt-requirements.txt /tmp/
+COPY config/pip-requirements.txt /tmp/
+COPY scripts/ /tmp/scripts
+# Instalar dependencias de sistema
+RUN chmod +x /tmp/scripts && \
+    /tmp/scripts/install-deps.sh && \
+    apt-get update && \
+    apt-get install -y ghostscript gsfonts && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+RUN /tmp/scripts/install-deps.sh
+# Cambiar propietario de archivos a odoo antes de cambiar de usuario
+RUN python3 /tmp/scripts/update-conf.py /etc/odoo/odoo.conf /mnt/extra-addons
+
+# # Volver al usuario odoo
+USER odoo
+
